@@ -479,7 +479,14 @@ public class FlutterSoundPlayer
 				                                                       mp.release ();
 				                                                       model.setMediaPlayer ( null );
 			                                                       } );
-			this.model.getMediaPlayer ().prepare ();
+			this.model.getMediaPlayer().setOnErrorListener(new MediaPlayer.OnErrorListener() {
+				@Override
+				public boolean onError(MediaPlayer mp, int what, int extra) {
+					result.error("-1","播放出错","播放出错");
+					return true;
+				}
+			});
+			this.model.getMediaPlayer ().prepareAsync ();
 		}
 		catch ( Exception e )
 		{

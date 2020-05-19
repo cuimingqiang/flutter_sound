@@ -325,26 +325,38 @@ extern void FlautoPlayerReg(NSObject<FlutterPluginRegistrar>* registrar)
                 {
 
                         // We must create a new Audio Player instance to be able to play a different Url
-                        audioPlayer = [[AVAudioPlayer alloc] initWithData:data error:nil];
+                    NSError* playError;
+                        audioPlayer = [[AVAudioPlayer alloc] initWithData:data error:&playError];
                         audioPlayer.delegate = self;
-
+                    
+                    if(playError!=nil){
+                     NSLog(@"play-----result, %@", playError);
+                        [self stopPlayer];
+                        
+                        result([FlutterError
+                        errorWithCode:[NSString stringWithFormat:@"%d",[playError code]]
+                        message:[playError description]
+                        details:nil]);
+                        return;
+                    }else{
                         [[UIApplication sharedApplication] beginReceivingRemoteControlEvents];
 
                         bool b = [self->audioPlayer play];
                         if (!b)
                         {
                                 [self stopPlayer];
-                                ([FlutterError
+                                result([FlutterError
                                 errorWithCode:@"Audio Player"
                                 message:@"Play failure"
                                 details:nil]);
-
+                                return;
                         }
+                    }
                 }];
 
                 [self startTimer];
-                NSString *filePath = self->audioFileURL.absoluteString;
-                result(filePath);
+//                NSString *filePath = self->audioFileURL.absoluteString;
+//                result(filePath);
                 [downloadTask resume];
         } else
         {
@@ -356,7 +368,7 @@ extern void FlautoPlayerReg(NSObject<FlutterPluginRegistrar>* registrar)
                 if (!b)
                 {
                         [self stopPlayer];
-                        ([FlutterError
+                        result([FlutterError
                                 errorWithCode:@"Audio Player"
                                 message:@"Play failure"
                                 details:nil]);
@@ -393,7 +405,7 @@ extern void FlautoPlayerReg(NSObject<FlutterPluginRegistrar>* registrar)
         if (!b)
         {
                 [self stopPlayer];
-                ([FlutterError
+                result([FlutterError
                         errorWithCode:@"Audio Player"
                         message:@"Play failure"
                         details:nil]);
